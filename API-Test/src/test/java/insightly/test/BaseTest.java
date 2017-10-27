@@ -14,7 +14,6 @@ public class BaseTest {
 	private static Properties prop;
 	@BeforeClass
 	public static void SetUp() {
-		RestAssured.baseURI = "https://api.insight.ly";
 		prop = new Properties();
 		try {
 			InputStream input = BaseTest.class.getClassLoader().getResourceAsStream("config.properties");
