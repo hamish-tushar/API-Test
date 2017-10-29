@@ -9,12 +9,13 @@ import insightly.test.BaseTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
-@Path(version = "v2.2", value = "contacts")
+@Path("v2.2")
 public class ContactTest extends BaseTest {
 
 	@Test
 	public void GetContact() {
-		Response response = given().accept(ContentType.JSON).when().get("/235236635").then().statusCode(200).extract()
+		System.out.println("GetContact Test");
+		Response response = given().accept(ContentType.JSON).when().get("/contacts/235236635").then().statusCode(200).extract()
 				.response();
 
 		Contact contact = response.body().as(Contact.class);

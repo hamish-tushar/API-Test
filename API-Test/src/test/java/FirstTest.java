@@ -1,12 +1,13 @@
 import org.junit.Test;
 
-import static io.restassured.RestAssured.given;
+import insightly.test.BaseTest;
 
-public class FirstTest {
+public class FirstTest extends BaseTest {
 	
 	
 	@Test
 	public void Test() {
+		System.out.println("FirstTest");
 		given().when().get("http://www.google.com").then().statusCode(200);
 	}
 }

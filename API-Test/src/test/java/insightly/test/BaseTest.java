@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import io.restassured.RestAssured;
@@ -13,7 +15,11 @@ import insightly.Path;
 public class BaseTest {
 	private static Properties prop;
 	@BeforeClass
-	public static void SetUp() {
+	public synchronized static void SetUp() {
+		if(prop != null) {
+			return;
+		}
+		System.out.println("Base class");
 		prop = new Properties();
 		try {
 			InputStream input = BaseTest.class.getClassLoader().getResourceAsStream("config.properties");
@@ -31,15 +37,14 @@ public class BaseTest {
 	}
 	
     protected static RequestSpecification given() {
-        return RestAssured.given().header("Authorization", prop.getProperty("Authorization"));
+        return RestAssured.given().header("Authorization", "Basic " + new String(Base64.encodeBase64(prop.getProperty("api-key").getBytes())));
     }
     
     @Before
     public void Version() {
     	Path annotation = this.getClass().getAnnotation(Path.class);
-    	if(annotation == null) {
-    		throw new RuntimeException(this.getClass().getCanonicalName() + " needs to have Version defined");
+    	if(annotation != null) {
+    		RestAssured.basePath = annotation.value();
     	}
-    	RestAssured.basePath = annotation.version() + "/" + annotation.value();    	
     }
 }
