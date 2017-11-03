@@ -8,6 +8,6 @@ public class FirstTest extends BaseTest {
 	@Test
 	public void Test() {
 		System.out.println("FirstTest");
-		given().when().get("http://www.google.com").then().statusCode(200);
+		given(this.getClass()).when().get("http://www.google.com").then().statusCode(200);
 	}
 }

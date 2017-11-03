@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "ROLE",
     "DETAILS"
 })
-public class LINK {
+public class Link {
 
     @JsonProperty("LINK_ID")
     private Integer lINKID;

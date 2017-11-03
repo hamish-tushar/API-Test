@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "CUSTOM_FIELD_ID",
     "FIELD_VALUE"
 })
-public class CUSTOMFIELD {
+public class CustomField {
 
     @JsonProperty("CUSTOM_FIELD_ID")
     private String cUSTOMFIELDID;

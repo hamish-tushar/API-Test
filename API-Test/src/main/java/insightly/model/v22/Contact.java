@@ -70,7 +70,7 @@ public class Contact {
     @JsonProperty("VISIBLE_USER_IDS")
     private Object vISIBLEUSERIDS;
     @JsonProperty("CUSTOMFIELDS")
-    private List<CUSTOMFIELD> cUSTOMFIELDS = null;
+    private List<CustomField> cUSTOMFIELDS = null;
     @JsonProperty("ADDRESSES")
     private Object aDDRESSES;
     @JsonProperty("CONTACTINFOS")
@@ -80,7 +80,7 @@ public class Contact {
     @JsonProperty("TAGS")
     private List<Object> tAGS = null;
     @JsonProperty("LINKS")
-    private List<LINK> lINKS = null;
+    private List<Link> lINKS = null;
     @JsonProperty("CONTACTLINKS")
     private List<Object> cONTACTLINKS = null;
     @JsonProperty("CAN_EDIT")
@@ -229,12 +229,12 @@ public class Contact {
     }
 
     @JsonProperty("CUSTOMFIELDS")
-    public List<CUSTOMFIELD> getCUSTOMFIELDS() {
+    public List<CustomField> getCUSTOMFIELDS() {
         return cUSTOMFIELDS;
     }
 
     @JsonProperty("CUSTOMFIELDS")
-    public void setCUSTOMFIELDS(List<CUSTOMFIELD> cUSTOMFIELDS) {
+    public void setCUSTOMFIELDS(List<CustomField> cUSTOMFIELDS) {
         this.cUSTOMFIELDS = cUSTOMFIELDS;
     }
 
@@ -279,12 +279,12 @@ public class Contact {
     }
 
     @JsonProperty("LINKS")
-    public List<LINK> getLINKS() {
+    public List<Link> getLINKS() {
         return lINKS;
     }
 
     @JsonProperty("LINKS")
-    public void setLINKS(List<LINK> lINKS) {
+    public void setLINKS(List<Link> lINKS) {
         this.lINKS = lINKS;
     }
 
