@@ -3,21 +3,31 @@ package insightly.test;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import insightly.Accept;
 import insightly.Content;
 import insightly.Path;
+import insightly.contact.ContactTest;
 
 public class BaseTest {
 	private static Properties prop;
 	
-	public static RandomObjectFiller randomObjectFiller;
+	public static RandomObjectFiller runtimeInstance;
+
+	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
 
 	@BeforeClass
 	public synchronized static void SetUp() {
@@ -30,7 +40,7 @@ public class BaseTest {
 			InputStream input = BaseTest.class.getClassLoader().getResourceAsStream("config.properties");
 
 			prop.load(input);
-			randomObjectFiller = new RandomObjectFiller();
+			runtimeInstance = new RandomObjectFiller();
 			
 			RestAssured.baseURI = prop.getProperty("uri");
 		} catch (FileNotFoundException e) {
@@ -71,5 +81,18 @@ public class BaseTest {
     		return annotation.value();
     	}
 		return ContentType.JSON;
+    }
+    
+    public byte[] getFileBytes(String fileName) {
+		URL input = BaseTest.class.getClassLoader().getResource("Albert_Einstein_Head.jpg");
+		try {
+			return Files.readAllBytes(Paths.get(input.toURI()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
     }
 }

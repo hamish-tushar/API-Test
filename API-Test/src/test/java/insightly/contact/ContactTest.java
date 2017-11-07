@@ -25,6 +25,7 @@ import insightly.Accept;
 import insightly.Content;
 import insightly.Path;
 import insightly.model.v22.Contact;
+import insightly.model.v22.CustomField;
 import insightly.model.v22.Tag;
 import insightly.test.BaseTest;
 import io.restassured.http.ContentType;
@@ -37,13 +38,69 @@ public class ContactTest extends BaseTest {
 
 	private static final Logger logger = LoggerFactory.getLogger(ContactTest.class);
 
-	//serialize and deserialize all entity types
-	//linking entity types
-	//add custom field
+	@Test
+	public void AddAContact() {
+		Contact contact = runtimeInstance.createContact();
+		
+		contact.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
+		contact.setLASTNAME(RandomStringUtils.randomAlphanumeric(20));
+		
+		contact = given(this.getClass())				
+				.when()
+					.body(contact)
+					.post("/Contacts")
+				.then()
+					.statusCode(201).extract().response().body().as(Contact.class);
+		
+		assertNotNull(contact.getCONTACTID());
+		deleteContact(contact);
+	}
+	
+	private void deleteContact(Contact contact) {
+		given(this.getClass())
+				.when()
+				.withId(contact.getCONTACTID())
+				.delete("/contacts").then().statusCode(202);
+	}
+	
+	@Test
+	public void AddAContactWithNoLastName() {
+		Contact contact = runtimeInstance.createContact();
+		contact.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
+		
+		Response response = given(this.getClass())
+				.when()
+					.body(contact)
+					.post("/Contacts")
+				.then()
+					.statusCode(400).extract().response();
+		
+		String errorMessage = response.body().print();
+		assertEquals("Field 'LAST_NAME' cannot be empty", errorMessage);
+	}
+	
+	@Test
+	public void GetListOfContactsSkip100Get50() {
+		Response response = 
+				given(this.getClass())
+				.when()
+					.skip(100)
+					.take(50)
+					.brief(false)
+					.countTotal(false)
+				.get("/Contacts")
+				.then()
+					.statusCode(200).extract().response();
+		
+		Contact[] contacts = response.body().as(Contact[].class);
+		assertEquals(50, contacts.length);
+	}
+	
+
 	
 	@Test
 	public void GetContact() {
-		Contact contact1 = randomObjectFiller.createContact();
+		Contact contact1 = runtimeInstance.createContact();
 		contact1.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
 		contact1.setLASTNAME(RandomStringUtils.randomAlphanumeric(20));
 		
@@ -101,59 +158,18 @@ public class ContactTest extends BaseTest {
 		Contact[] contacts = response.body().as(Contact[].class);
 		assertEquals(50, contacts.length);
 	}
-	
-	@Test
-	public void GetListOfContactsSkip100() {
-		//check ids not in other	
-		Response response = given(this.getClass())
-				.skip(100)
-				.brief(false)
-				.countTotal(false)
-				.get("/Contacts").then().statusCode(200).extract()
-				.response();
-		Contact[] contacts = response.body().as(Contact[].class);
-		assertEquals(100, contacts.length);
-	}
-	
-	@Test
-	public void AddAContactWithNoLastName() {
-		Contact contact = randomObjectFiller.createContact();
-		contact.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
-		Response response = given(this.getClass())
-				.when()
-				.body(contact)
-				.post("/Contacts").then().statusCode(400).extract().response();
-		String errorMessage = response.body().print();
-		assertEquals("Field 'LAST_NAME' cannot be empty", errorMessage);
-	}
-	
-	@Test
-	public void AddAContact() {
-		Contact contact = randomObjectFiller.createContact();
-		contact.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
-		contact.setLASTNAME(RandomStringUtils.randomAlphanumeric(20));
-		
-		contact = given(this.getClass())				
-				.when()
-					.body(contact)
-					.post("/Contacts")
-				.then()
-					.statusCode(201).extract().response().body().as(Contact.class);
-		
-		assertNotNull(contact.getCONTACTID());
-		deleteContact(contact);
-	}
+
 	
 	@Test
 	public void AddAContactImage(){		
 		try {
-			Contact contact = addContact();			
+			Contact contact = addContact();				
 			URL input = BaseTest.class.getClassLoader().getResource("Albert_Einstein_Head.jpg");
-			
+
 			contact = given(this.getClass())				
 					.when().contentType(ContentType.BINARY)
-					.pathParam("id", contact.getCONTACTID())
-					.pathParam("filename", "Albert_Einstein_Head.jpg")
+					.id(contact.getCONTACTID())
+					.fileName("Albert_Einstein_Head.jpg")
 						.body(Files.readAllBytes(Paths.get(input.toURI())))
 						.put("/Contacts/{id}/Image/{filename}")
 					.then()
@@ -180,9 +196,9 @@ public class ContactTest extends BaseTest {
 			
 			given(this.getClass())				
 					.when()
-					.pathParam("id", contact.getCONTACTID())
-						.body(tag)
-						.post("/Contacts/{id}/Tags")
+					.id(contact.getCONTACTID())
+					.body(tag)
+					.post("/Contacts/{id}/Tags")
 					.then()
 						.statusCode(201).extract().response().body();
 		
@@ -211,7 +227,7 @@ public class ContactTest extends BaseTest {
 			given(this.getClass())				
 					.when()
 					.contentType("multipart/form-data").multiPart(new File(input.toURI()))
-					.pathParam("id", contact.getCONTACTID())
+					.id(contact.getCONTACTID())
 						.post("/Contacts/{id}/FileAttachments")
 					.then()
 						.statusCode(201).extract().response().body();
@@ -225,25 +241,38 @@ public class ContactTest extends BaseTest {
 		}		
 	}
 	
+	@Test
+	public void updateContactCustomField() {
+			Contact contact = addContact();
+			
+			CustomField customField = new CustomField();
+			customField.setCUSTOMFIELDID("CONTACT_FIELD_70");
+			customField.setFIELDVALUE(RandomStringUtils.randomAlphanumeric(20));
+			
+			
+			customField =  given(this.getClass())				
+					.when()
+						.id(contact.getCONTACTID())
+						.body(customField)
+						.put("/Contacts/{id}/CustomFields")
+					.then()
+						.statusCode(200).extract().response().body().as(CustomField.class);
+			
+			deleteContact(contact);
+		
+	}
 	
 	public void deleteTag(int id, String tagName) {
 		given(this.getClass())
 				.when()
-				.pathParam("id", id)
+				.id(id)
 				.pathParam("tagName", tagName)
 				.delete("/Contacts/{id}/Tags/{tagName}").then().statusCode(202);
 	}
 	
-	public void deleteContact(Contact contact) {
-		given(this.getClass())
-				.when()
-				.withId(contact.getCONTACTID())
-				.delete("/contacts").then().statusCode(202);
-	}
-	
-	public Contact addContact() {
+	private Contact addContact() {
 		try {
-			Contact contact = randomObjectFiller.createContact();
+			Contact contact = runtimeInstance.createContact();
 			contact.setFIRSTNAME(RandomStringUtils.randomAlphanumeric(20));
 			contact.setLASTNAME(RandomStringUtils.randomAlphanumeric(20));
 			
@@ -262,7 +291,7 @@ public class ContactTest extends BaseTest {
 		
 	}
 	
-	public Contact getContact(int id) {		
+	private Contact getContact(int id) {		
 		return given(this.getClass())
 				.when()
 					.withId(id)

@@ -61,6 +61,16 @@ public class InsightlyRequestSpecification implements RequestSpecification{
         return this;
     }
     
+    public InsightlyRequestSpecification id(int id) {
+        spec.pathParam("id", id);
+        return this;
+    }
+    
+    public InsightlyRequestSpecification fileName(String fileName) {
+        spec.pathParam("filename", fileName);
+        return this;
+    }
+    
 	public Response get(String path, Object... pathParams) {
 		return spec.get(path, pathParams);
 	}
